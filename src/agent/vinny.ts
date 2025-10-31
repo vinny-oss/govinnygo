@@ -37,7 +37,7 @@ Keep tweets under 280 characters, engaging, and authentic to Vinny's character.`
 
     try {
       const message = await this.client.messages.create({
-        model: 'claude-3-5-sonnet-20240620',
+        model: 'claude-3-haiku-20240307',
         max_tokens: 200,
         temperature: 0.9,
         system: this.systemPrompt,
