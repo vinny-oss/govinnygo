@@ -14,7 +14,23 @@ Vinny is an AI-powered X/Twitter bot that posts engaging content about:
 
 Posts 10 times per day to stay within free tier limits.
 
-## Setup
+## Quick Setup (Easiest!)
+
+Run the interactive setup script - it will securely prompt for all your credentials:
+
+```bash
+npm run setup
+```
+
+Then start Vinny:
+```bash
+npm run dev  # Test first
+npm start    # Or run in production
+```
+
+See [QUICKSTART.md](./QUICKSTART.md) for detailed step-by-step instructions!
+
+## Manual Setup
 
 ### 1. Get X/Twitter API Credentials
 
