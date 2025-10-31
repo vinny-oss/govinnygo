@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  vinny:
+    build: .
+    container_name: vinny-dog-influencer
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
