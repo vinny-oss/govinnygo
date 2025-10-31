@@ -10,12 +10,22 @@ export class PostScheduler {
   private db: PostDatabase;
   private postsPerDay: number;
   private isPosting: boolean = false;
+  private timezone: string;
+  private activeStartHour: number = 4; // 4 AM
+  private activeEndHour: number = 20; // 8 PM
 
   constructor(config: Config, db: PostDatabase) {
     this.vinny = new VinnyAgent(config.anthropic);
     this.twitter = new TwitterClient(config.twitter);
     this.db = db;
     this.postsPerDay = config.postsPerDay;
+    this.timezone = config.timezone;
+  }
+
+  private isActiveHours(): boolean {
+    const now = new Date().toLocaleString('en-US', { timeZone: this.timezone });
+    const currentHour = new Date(now).getHours();
+    return currentHour >= this.activeStartHour && currentHour < this.activeEndHour;
   }
 
   async start(): Promise<void> {
@@ -28,27 +38,33 @@ export class PostScheduler {
     }
 
     console.log(`📅 Scheduling ${this.postsPerDay} posts per day`);
+    console.log(`🌍 Timezone: ${this.timezone}`);
+    console.log(`⏰ Active hours: ${this.activeStartHour}:00 AM - ${this.activeEndHour}:00 PM`);
 
-    // Calculate interval between posts
-    // Spread posts evenly throughout the day (e.g., every 2.4 hours for 10 posts)
-    const minutesBetweenPosts = Math.floor((24 * 60) / this.postsPerDay);
-    console.log(`⏰ Posting every ${minutesBetweenPosts} minutes`);
+    // Calculate interval between posts (16 hours = 960 minutes for 10 posts = 96 min intervals)
+    const activeHours = this.activeEndHour - this.activeStartHour;
+    const minutesBetweenPosts = Math.floor((activeHours * 60) / this.postsPerDay);
+    console.log(`⏰ Posting every ${minutesBetweenPosts} minutes during active hours`);
 
-    // Create cron expression for posting interval
-    const cronExpression = `*/${minutesBetweenPosts} * * * *`;
-
-    // Schedule posts
-    cron.schedule(cronExpression, async () => {
+    // Run every hour and check if we should post
+    // This checks every hour on the hour, but only posts during active hours at proper intervals
+    cron.schedule('*/30 * * * *', async () => {
       await this.executePost();
+    }, {
+      timezone: this.timezone
     });
 
-    // Post immediately on startup if we haven't hit today's limit
+    // Check if we should post immediately on startup
     const todayCount = this.db.getTodayPostCount();
-    if (todayCount < this.postsPerDay) {
+    if (todayCount < this.postsPerDay && this.isActiveHours()) {
       console.log('🚀 Posting initial tweet...');
       await this.executePost();
+    } else if (todayCount >= this.postsPerDay) {
+      console.log(`✅ Already posted ${todayCount} times today. Waiting for tomorrow at ${this.activeStartHour}:00 AM.`);
     } else {
-      console.log(`✅ Already posted ${todayCount} times today. Waiting for next scheduled post.`);
+      const now = new Date().toLocaleString('en-US', { timeZone: this.timezone });
+      const currentHour = new Date(now).getHours();
+      console.log(`💤 Outside active hours (currently ${currentHour}:00). Waiting until ${this.activeStartHour}:00 AM to start posting.`);
     }
 
     console.log('✅ Vinny is now running! Press Ctrl+C to stop.');
@@ -59,13 +75,17 @@ export class PostScheduler {
       return; // Prevent concurrent posts
     }
 
+    // Check if we're in active hours
+    if (!this.isActiveHours()) {
+      return; // Silently skip if outside active hours
+    }
+
     this.isPosting = true;
 
     try {
       // Check if we've already hit the daily limit
       const todayCount = this.db.getTodayPostCount();
       if (todayCount >= this.postsPerDay) {
-        console.log(`⏸️  Daily limit reached (${this.postsPerDay} posts). Skipping this interval.`);
         this.isPosting = false;
         return;
       }
