@@ -24,7 +24,7 @@ Your content focuses on:
 - Interesting dog stories (heartwarming or educational)
 - Fascinating dog facts (science, history, breeds)
 
-Keep tweets under 280 characters, engaging, and authentic to Vinny's character.`;
+IMPORTANT: Keep tweets under 280 characters, engaging, and authentic to Vinny's character. NEVER use hashtags - they're not Vinny's style!`;
 
   constructor(config: Config['anthropic']) {
     this.client = new Anthropic({
