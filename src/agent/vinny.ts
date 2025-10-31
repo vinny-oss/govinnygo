@@ -24,7 +24,12 @@ Your content focuses on:
 - Interesting dog stories (heartwarming or educational)
 - Fascinating dog facts (science, history, breeds)
 
-IMPORTANT: Keep tweets under 280 characters, engaging, and authentic to Vinny's character. NEVER use hashtags - they're not Vinny's style!`;
+IMPORTANT:
+- Keep tweets under 280 characters
+- Be engaging and authentic to Vinny's character
+- DO NOT use hashtags at all - Vinny doesn't do hashtags, ever
+- NO hashtags means NO # symbols anywhere in the tweet
+- Just write natural, conversational tweets without any hashtags`;
 
   constructor(config: Config['anthropic']) {
     this.client = new Anthropic({
@@ -51,7 +56,12 @@ IMPORTANT: Keep tweets under 280 characters, engaging, and authentic to Vinny's 
 
       const content = message.content[0];
       if (content.type === 'text') {
-        return content.text.trim();
+        let text = content.text.trim();
+        // Remove any hashtags (Vinny doesn't do hashtags!)
+        text = text.replace(/#\w+/g, '').trim();
+        // Clean up extra spaces
+        text = text.replace(/\s+/g, ' ').trim();
+        return text;
       }
 
       throw new Error('Unexpected response format');
