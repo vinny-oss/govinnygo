@@ -14,22 +14,26 @@ export function loadConfig(): Config {
 
   const missing = requiredEnvVars.filter(v => !process.env[v]);
 
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  // Demo mode - allow running without credentials for UI preview
+  const demoMode = missing.length > 0;
+
+  if (demoMode) {
+    console.warn('⚠️  Running in DEMO MODE - some features will be disabled');
+    console.warn('⚠️  Missing credentials:', missing.join(', '));
   }
 
   return {
     twitter: {
-      apiKey: process.env.TWITTER_API_KEY!,
-      apiSecret: process.env.TWITTER_API_SECRET!,
-      accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-      accessSecret: process.env.TWITTER_ACCESS_SECRET!,
+      apiKey: process.env.TWITTER_API_KEY || 'demo',
+      apiSecret: process.env.TWITTER_API_SECRET || 'demo',
+      accessToken: process.env.TWITTER_ACCESS_TOKEN || 'demo',
+      accessSecret: process.env.TWITTER_ACCESS_SECRET || 'demo',
     },
     anthropic: {
-      apiKey: process.env.ANTHROPIC_API_KEY!,
+      apiKey: process.env.ANTHROPIC_API_KEY || 'demo',
     },
     postsPerDay: parseInt(process.env.POSTS_PER_DAY || '10', 10),
-    timezone: process.env.TIMEZONE || 'America/New_York',
+    timezone: process.env.TIMEZONE || 'America/Edmonton',
   };
 }
 

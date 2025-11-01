@@ -1,8 +1,12 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { BotController } from './bot-controller.js';
 import { PostDatabase } from '../database/db.js';
 import { config } from '../config/config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const botController = new BotController();
