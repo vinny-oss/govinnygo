@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinny AI Command Center - Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .status-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
+      }
+    }
+
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .status-active {
+      background: #10b981;
+      color: white;
+    }
+
+    .status-inactive {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #5568d3;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #4b5563;
+    }
+
+    .post-card {
+      border-left: 4px solid #667eea;
+      transition: all 0.2s;
+    }
+
+    .post-card:hover {
+      background: #f9fafb;
+      border-left-color: #764ba2;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .demo-banner {
+      background: #fbbf24;
+      color: #78350f;
+      padding: 0.75rem;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Demo Mode Banner -->
+  <div class="demo-banner">
+    <i class="fas fa-info-circle"></i> DEMO MODE - This is a visual preview with sample data
+  </div>
+
+  <!-- Header -->
+  <header class="gradient-bg text-white shadow-lg">
+    <div class="container mx-auto px-6 py-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <i class="fas fa-dog text-4xl"></i>
+          <div>
+            <h1 class="text-3xl font-bold">Vinny AI Command Center</h1>
+            <p class="text-purple-200 text-sm">Agent Management Dashboard</p>
+          </div>
+        </div>
+        <div id="statusBadge" class="status-badge status-active">
+          <span class="status-pulse">●</span>
+          <span id="statusText">Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-8">
+
+    <!-- Control Panel -->
+    <section class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-gamepad text-purple-600"></i>
+          Control Panel
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Bot Status</div>
+            <div id="botStatus" class="text-2xl font-bold text-gray-800">Running</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Posts Today</div>
+            <div id="postsToday" class="text-2xl font-bold text-purple-600">7</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Daily Limit</div>
+            <div id="dailyLimit" class="text-2xl font-bold text-gray-800">10</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Uptime</div>
+            <div id="uptime" class="text-2xl font-bold text-green-600">4h 32m</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button id="btnStart" class="btn btn-primary" disabled>
+            <i class="fas fa-play mr-2"></i>Start Bot
+          </button>
+          <button id="btnStop" class="btn btn-danger">
+            <i class="fas fa-stop mr-2"></i>Stop Bot
+          </button>
+          <button id="btnPostNow" class="btn btn-secondary">
+            <i class="fas fa-paper-plane mr-2"></i>Post Now
+          </button>
+          <button id="btnPreview" class="btn btn-secondary">
+            <i class="fas fa-eye mr-2"></i>Preview Post
+          </button>
+          <button id="btnRefresh" class="btn btn-secondary">
+            <i class="fas fa-sync-alt mr-2"></i>Refresh
+          </button>
+        </div>
+
+        <!-- Preview Area -->
+        <div id="previewArea" class="mt-6">
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-comment-dots text-blue-500 text-xl mt-1"></i>
+              <div class="flex-1">
+                <h3 class="font-semibold text-blue-900 mb-1">Preview Post</h3>
+                <p id="previewContent" class="text-gray-700 mb-2">Did you know? Regular dental care can add 2-3 years to your pup's life! Keep those chompers clean with daily brushing and dental treats. Your future senior dog will thank you!</p>
+                <span id="previewCategory" class="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">HEALTH TIP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agents Section -->
+    <section class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-robot text-purple-600"></i>
+          Active Agents
+        </h2>
+
+        <div id="agentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-lg">Vinny the Health Dog</h3>
+              <i class="fas fa-check-circle text-green-500 text-xl"></i>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Status:</span>
+                <span class="font-semibold text-green-600">active</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Today:</span>
+                <span class="font-semibold">7 posts</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Total:</span>
+                <span class="font-semibold">342 posts</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card opacity-50">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-lg">Future Agent Slot</h3>
+              <i class="fas fa-plus-circle text-gray-400 text-xl"></i>
+            </div>
+            <div class="text-sm text-gray-500">
+              Add more agents to manage multiple personalities and posting strategies
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration Section -->
+    <section class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-cog text-purple-600"></i>
+          Configuration
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Posts Per Day</label>
+            <input type="number" id="postsPerDay" min="1" max="50" value="10"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Timezone</label>
+            <select id="timezone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="America/Edmonton" selected>America/Edmonton</option>
+              <option value="America/New_York">America/New_York</option>
+              <option value="America/Los_Angeles">America/Los_Angeles</option>
+              <option value="America/Chicago">America/Chicago</option>
+              <option value="America/Denver">America/Denver</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button id="btnSaveConfig" class="btn btn-primary">
+            <i class="fas fa-save mr-2"></i>Save Configuration
+          </button>
+          <p class="text-sm text-gray-600 mt-2">
+            <i class="fas fa-info-circle"></i> Bot will automatically restart with new settings
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Post History -->
+    <section class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <i class="fas fa-history text-purple-600"></i>
+            Post History
+          </h2>
+
+          <select id="categoryFilter"
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+            <option value="all">All Categories</option>
+            <option value="health_tip">Health Tips</option>
+            <option value="fitness">Fitness</option>
+            <option value="safety">Safety</option>
+            <option value="longevity">Longevity</option>
+            <option value="joke">Jokes</option>
+            <option value="story">Stories</option>
+            <option value="fact">Facts</option>
+          </select>
+        </div>
+
+        <div id="postsList" class="space-y-4 max-h-96 overflow-y-auto">
+          <!-- Sample Posts -->
+          <div class="post-card bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs px-2 py-1 rounded" style="background: #10b98120; color: #10b981; font-weight: 600;">
+                HEALTH TIP
+              </span>
+              <span class="text-xs text-gray-500">2 hours ago</span>
+            </div>
+            <p class="text-gray-800 leading-relaxed">Just like Brian Johnson tracks his biomarkers, I track my zoomies per day! Regular exercise isn't just fun - it's longevity fuel. Get those steps in, pups!</p>
+            <div class="mt-2 text-xs text-gray-400">
+              2025-11-01 11:23:15
+            </div>
+          </div>
+
+          <div class="post-card bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs px-2 py-1 rounded" style="background: #3b82f620; color: #3b82f6; font-weight: 600;">
+                FITNESS
+              </span>
+              <span class="text-xs text-gray-500">4 hours ago</span>
+            </div>
+            <p class="text-gray-800 leading-relaxed">Tiny paws, BIG workouts! Even us small breeds need 30-60 mins of exercise daily. Mental stimulation counts too - puzzle toys are my jam!</p>
+            <div class="mt-2 text-xs text-gray-400">
+              2025-11-01 09:15:42
+            </div>
+          </div>
+
+          <div class="post-card bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs px-2 py-1 rounded" style="background: #ef444420; color: #ef4444; font-weight: 600;">
+                SAFETY
+              </span>
+              <span class="text-xs text-gray-500">6 hours ago</span>
+            </div>
+            <p class="text-gray-800 leading-relaxed">PSA: Grapes and raisins are TOXIC to dogs! Even small amounts can cause kidney failure. Keep them far away from curious snouts like mine!</p>
+            <div class="mt-2 text-xs text-gray-400">
+              2025-11-01 07:42:18
+            </div>
+          </div>
+
+          <div class="post-card bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs px-2 py-1 rounded" style="background: #8b5cf620; color: #8b5cf6; font-weight: 600;">
+                LONGEVITY
+              </span>
+              <span class="text-xs text-gray-500">8 hours ago</span>
+            </div>
+            <p class="text-gray-800 leading-relaxed">Prevention > cure! Annual vet checkups can catch issues early. Small dogs like me can live 15-20 years with proper care. Let's optimize for the long game!</p>
+            <div class="mt-2 text-xs text-gray-400">
+              2025-11-01 05:18:33
+            </div>
+          </div>
+
+          <div class="post-card bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs px-2 py-1 rounded" style="background: #f59e0b20; color: #f59e0b; font-weight: 600;">
+                JOKE
+              </span>
+              <span class="text-xs text-gray-500">10 hours ago</span>
+            </div>
+            <p class="text-gray-800 leading-relaxed">Why did the health-conscious dog refuse dessert? Because he was already PAWS-itively full of nutrients! 🥗</p>
+            <div class="mt-2 text-xs text-gray-400">
+              2025-11-01 03:05:27
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-chart-bar text-purple-600"></i>
+          Statistics
+        </h2>
+
+        <div id="statsContent" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Total Posts</div>
+            <div class="text-2xl font-bold text-purple-600">342</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">Today</div>
+            <div class="text-2xl font-bold text-green-600">7</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">health tip</div>
+            <div class="text-2xl font-bold text-blue-600">98</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-sm text-gray-600 mb-1">fitness</div>
+            <div class="text-2xl font-bold text-blue-600">87</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 hidden">
+    <div class="bg-gray-900 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3">
+      <i id="toastIcon" class="fas fa-check-circle text-xl"></i>
+      <span id="toastMessage">Success!</span>
+    </div>
+  </div>
+
+  <script>
+    // Demo mode - just show UI, no real API calls
+    console.log('Vinny Command Center - Demo Mode');
+    console.log('This is a visual preview with sample data');
+
+    // Add some interactivity for demo
+    document.getElementById('btnPreview').addEventListener('click', function() {
+      showToast('Preview generated! (Demo mode)', 'success');
+    });
+
+    document.getElementById('btnRefresh').addEventListener('click', function() {
+      showToast('Data refreshed! (Demo mode)', 'success');
+    });
+
+    document.getElementById('btnSaveConfig').addEventListener('click', function() {
+      showToast('Configuration saved! (Demo mode)', 'success');
+    });
+
+    document.getElementById('btnPostNow').addEventListener('click', function() {
+      showToast('Post would be created here (Demo mode)', 'success');
+    });
+
+    document.getElementById('btnStop').addEventListener('click', function() {
+      showToast('Bot would stop here (Demo mode)', 'success');
+    });
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMessage.textContent = message;
+
+      if (type === 'error') {
+        toastIcon.className = 'fas fa-exclamation-circle text-xl';
+      } else {
+        toastIcon.className = 'fas fa-check-circle text-xl';
+      }
+
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
