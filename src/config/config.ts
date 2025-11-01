@@ -32,3 +32,6 @@ export function loadConfig(): Config {
     timezone: process.env.TIMEZONE || 'America/New_York',
   };
 }
+
+// Export a singleton config instance
+export const config = loadConfig();

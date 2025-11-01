@@ -1,4 +1,4 @@
-import cron from 'node-cron';
+import cron, { ScheduledTask } from 'node-cron';
 import { VinnyAgent } from '../agent/vinny.js';
 import { TwitterClient } from '../twitter/client.js';
 import { PostDatabase } from '../database/db.js';
@@ -13,6 +13,7 @@ export class PostScheduler {
   private timezone: string;
   private activeStartHour: number = 4; // 4 AM
   private activeEndHour: number = 20; // 8 PM
+  private cronTask: ScheduledTask | null = null;
 
   constructor(config: Config, db: PostDatabase) {
     this.vinny = new VinnyAgent(config.anthropic);
@@ -48,7 +49,7 @@ export class PostScheduler {
 
     // Run every hour and check if we should post
     // This checks every hour on the hour, but only posts during active hours at proper intervals
-    cron.schedule('*/30 * * * *', async () => {
+    this.cronTask = cron.schedule('*/30 * * * *', async () => {
       await this.executePost();
     }, {
       timezone: this.timezone
@@ -70,14 +71,14 @@ export class PostScheduler {
     console.log('✅ Vinny is now running! Press Ctrl+C to stop.');
   }
 
-  private async executePost(): Promise<void> {
+  async executePost(): Promise<{ success: boolean; content?: string; error?: string }> {
     if (this.isPosting) {
-      return; // Prevent concurrent posts
+      return { success: false, error: 'Already posting' };
     }
 
     // Check if we're in active hours
     if (!this.isActiveHours()) {
-      return; // Silently skip if outside active hours
+      return { success: false, error: 'Outside active hours' };
     }
 
     this.isPosting = true;
@@ -87,7 +88,7 @@ export class PostScheduler {
       const todayCount = this.db.getTodayPostCount();
       if (todayCount >= this.postsPerDay) {
         this.isPosting = false;
-        return;
+        return { success: false, error: 'Daily limit reached' };
       }
 
       console.log(`\n🎬 Generating post ${todayCount + 1}/${this.postsPerDay} for today...`);
@@ -120,6 +121,9 @@ export class PostScheduler {
       });
 
       console.log(`✅ Post ${todayCount + 1}/${this.postsPerDay} completed!`);
+
+      this.isPosting = false;
+      return { success: true, content };
     } catch (error: any) {
       console.error('❌ Failed to execute post:', error.message);
 
@@ -130,14 +134,18 @@ export class PostScheduler {
         category: 'health_tip',
         success: false,
       });
-    } finally {
+
       this.isPosting = false;
+      return { success: false, error: error.message };
     }
   }
 
   stop(): void {
     this.isPosting = false;
-    this.db.close();
+    if (this.cronTask) {
+      this.cronTask.stop();
+      this.cronTask = null;
+    }
     console.log('🛑 Vinny has been stopped.');
   }
 }

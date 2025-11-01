@@ -93,3 +93,6 @@ export class PostDatabase {
     this.db.close();
   }
 }
+
+// Export as Database for backward compatibility
+export { PostDatabase as Database };
