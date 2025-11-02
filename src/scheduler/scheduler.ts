@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { VinnyAgent } from '../agent/vinny.js';
 import { TwitterClient } from '../twitter/client.js';
 import { PostDatabase } from '../database/db.js';
-import { Config } from '../types/index.js';
+import { Config, PostCategory } from '../types/index.js';
 
 export class PostScheduler {
   private vinny: VinnyAgent;
@@ -12,25 +12,27 @@ export class PostScheduler {
   private isPosting: boolean = false;
   private timezone: string;
 
-  // Specific posting times (Edmonton time): 4 AM - 8 PM, 10 posts evenly distributed
-  private postingTimes: string[] = [
-    '0 4 * * *',    // 4:00 AM
-    '36 5 * * *',   // 5:36 AM
-    '12 7 * * *',   // 7:12 AM
-    '48 8 * * *',   // 8:48 AM
-    '24 10 * * *',  // 10:24 AM
-    '0 12 * * *',   // 12:00 PM
-    '36 13 * * *',  // 1:36 PM
-    '12 15 * * *',  // 3:12 PM
-    '48 16 * * *',  // 4:48 PM
-    '24 18 * * *'   // 6:24 PM (last post before 8 PM)
+  // 12 posts per day: good morning, 10 regular (including lunch), good night
+  private postingSchedule: Array<{ time: string; category: PostCategory | 'random' }> = [
+    { time: '0 4 * * *',    category: 'good_morning' },  // 4:00 AM
+    { time: '20 5 * * *',   category: 'random' },        // 5:20 AM
+    { time: '40 6 * * *',   category: 'random' },        // 6:40 AM
+    { time: '0 8 * * *',    category: 'random' },        // 8:00 AM
+    { time: '20 9 * * *',   category: 'random' },        // 9:20 AM
+    { time: '40 10 * * *',  category: 'random' },        // 10:40 AM
+    { time: '0 12 * * *',   category: 'lunch' },         // 12:00 PM - Lunch post
+    { time: '20 13 * * *',  category: 'random' },        // 1:20 PM
+    { time: '40 14 * * *',  category: 'random' },        // 2:40 PM
+    { time: '0 16 * * *',   category: 'random' },        // 4:00 PM
+    { time: '20 17 * * *',  category: 'random' },        // 5:20 PM
+    { time: '45 19 * * *',  category: 'good_night' },    // 7:45 PM - Good night
   ];
 
   constructor(config: Config, db: PostDatabase) {
     this.vinny = new VinnyAgent(config.anthropic);
     this.twitter = new TwitterClient(config.twitter);
     this.db = db;
-    this.postsPerDay = config.postsPerDay;
+    this.postsPerDay = 12; // Now 12 posts per day
     this.timezone = config.timezone;
   }
 
@@ -46,13 +48,16 @@ export class PostScheduler {
     console.log(`📅 Scheduling ${this.postsPerDay} posts per day`);
     console.log(`🌍 Timezone: ${this.timezone}`);
     console.log(`⏰ Active hours: 4:00 AM - 8:00 PM`);
-    console.log(`📍 Posting at specific times (not post count based)`);
+    console.log(`📍 Time-based schedule (not post count)`);
 
     // Schedule each posting time
-    this.postingTimes.forEach((cronTime, index) => {
-      cron.schedule(cronTime, async () => {
-        console.log(`\n⏰ Scheduled post time #${index + 1} triggered`);
-        await this.executePost(index + 1);
+    this.postingSchedule.forEach((schedule, index) => {
+      cron.schedule(schedule.time, async () => {
+        console.log(`\n⏰ Scheduled post #${index + 1} triggered`);
+        const category = schedule.category === 'random'
+          ? this.vinny.getRandomCategory()
+          : schedule.category;
+        await this.executePost(index + 1, category);
       }, {
         timezone: this.timezone
       });
@@ -72,14 +77,26 @@ export class PostScheduler {
     }
 
     console.log('\n📅 Today\'s posting schedule (Edmonton time):');
-    const times = ['4:00 AM', '5:36 AM', '7:12 AM', '8:48 AM', '10:24 AM',
-                   '12:00 PM', '1:36 PM', '3:12 PM', '4:48 PM', '6:24 PM'];
+    const times = [
+      '4:00 AM - Good Morning',
+      '5:20 AM',
+      '6:40 AM',
+      '8:00 AM',
+      '9:20 AM',
+      '10:40 AM',
+      '12:00 PM - Lunch',
+      '1:20 PM',
+      '2:40 PM',
+      '4:00 PM',
+      '5:20 PM',
+      '7:45 PM - Good Night'
+    ];
     times.forEach((time, i) => console.log(`   ${i + 1}. ${time}`));
 
     console.log('\n✅ Vinny is now running! Press Ctrl+C to stop.');
   }
 
-  private async executePost(postNumber: number): Promise<void> {
+  private async executePost(postNumber: number, category: PostCategory): Promise<void> {
     if (this.isPosting) {
       console.log(`⏭️  Already posting, skipping this scheduled time`);
       return;
@@ -89,9 +106,6 @@ export class PostScheduler {
 
     try {
       console.log(`\n🎬 Generating scheduled post #${postNumber}...`);
-
-      // Get random category
-      const category = this.vinny.getRandomCategory();
       console.log(`📝 Category: ${category}`);
 
       // Get recent posts to avoid repetition

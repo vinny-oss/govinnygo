@@ -21,6 +21,9 @@ export interface Post {
 }
 
 export type PostCategory =
+  | 'good_morning'
+  | 'lunch'
+  | 'good_night'
   | 'health_tip'
   | 'fitness'
   | 'safety'
