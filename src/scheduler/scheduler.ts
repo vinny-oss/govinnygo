@@ -11,8 +11,20 @@ export class PostScheduler {
   private postsPerDay: number;
   private isPosting: boolean = false;
   private timezone: string;
-  private activeStartHour: number = 4; // 4 AM
-  private activeEndHour: number = 20; // 8 PM
+
+  // Specific posting times (Edmonton time): 4 AM - 8 PM, 10 posts evenly distributed
+  private postingTimes: string[] = [
+    '0 4 * * *',    // 4:00 AM
+    '36 5 * * *',   // 5:36 AM
+    '12 7 * * *',   // 7:12 AM
+    '48 8 * * *',   // 8:48 AM
+    '24 10 * * *',  // 10:24 AM
+    '0 12 * * *',   // 12:00 PM
+    '36 13 * * *',  // 1:36 PM
+    '12 15 * * *',  // 3:12 PM
+    '48 16 * * *',  // 4:48 PM
+    '24 18 * * *'   // 6:24 PM (last post before 8 PM)
+  ];
 
   constructor(config: Config, db: PostDatabase) {
     this.vinny = new VinnyAgent(config.anthropic);
@@ -20,12 +32,6 @@ export class PostScheduler {
     this.db = db;
     this.postsPerDay = config.postsPerDay;
     this.timezone = config.timezone;
-  }
-
-  private isActiveHours(): boolean {
-    const now = new Date().toLocaleString('en-US', { timeZone: this.timezone });
-    const currentHour = new Date(now).getHours();
-    return currentHour >= this.activeStartHour && currentHour < this.activeEndHour;
   }
 
   async start(): Promise<void> {
@@ -39,58 +45,50 @@ export class PostScheduler {
 
     console.log(`📅 Scheduling ${this.postsPerDay} posts per day`);
     console.log(`🌍 Timezone: ${this.timezone}`);
-    console.log(`⏰ Active hours: ${this.activeStartHour}:00 AM - ${this.activeEndHour}:00 PM`);
+    console.log(`⏰ Active hours: 4:00 AM - 8:00 PM`);
+    console.log(`📍 Posting at specific times (not post count based)`);
 
-    // Calculate interval between posts (16 hours = 960 minutes for 10 posts = 96 min intervals)
-    const activeHours = this.activeEndHour - this.activeStartHour;
-    const minutesBetweenPosts = Math.floor((activeHours * 60) / this.postsPerDay);
-    console.log(`⏰ Posting every ${minutesBetweenPosts} minutes during active hours`);
-
-    // Run every hour and check if we should post
-    // This checks every hour on the hour, but only posts during active hours at proper intervals
-    cron.schedule('*/30 * * * *', async () => {
-      await this.executePost();
-    }, {
-      timezone: this.timezone
+    // Schedule each posting time
+    this.postingTimes.forEach((cronTime, index) => {
+      cron.schedule(cronTime, async () => {
+        console.log(`\n⏰ Scheduled post time #${index + 1} triggered`);
+        await this.executePost(index + 1);
+      }, {
+        timezone: this.timezone
+      });
     });
 
-    // Check if we should post immediately on startup
-    const todayCount = this.db.getTodayPostCount();
-    if (todayCount < this.postsPerDay && this.isActiveHours()) {
-      console.log('🚀 Posting initial tweet...');
-      await this.executePost();
-    } else if (todayCount >= this.postsPerDay) {
-      console.log(`✅ Already posted ${todayCount} times today. Waiting for tomorrow at ${this.activeStartHour}:00 AM.`);
+    const now = new Date().toLocaleString('en-US', { timeZone: this.timezone });
+    const edmontonTime = new Date(now);
+    const currentHour = edmontonTime.getHours();
+    const currentMinute = edmontonTime.getMinutes();
+
+    console.log(`\n🕐 Current Edmonton time: ${currentHour}:${currentMinute.toString().padStart(2, '0')}`);
+
+    if (currentHour >= 4 && currentHour < 20) {
+      console.log(`✅ Within active hours - Vinny will post at scheduled times`);
     } else {
-      const now = new Date().toLocaleString('en-US', { timeZone: this.timezone });
-      const currentHour = new Date(now).getHours();
-      console.log(`💤 Outside active hours (currently ${currentHour}:00). Waiting until ${this.activeStartHour}:00 AM to start posting.`);
+      console.log(`💤 Outside active hours (4 AM - 8 PM) - Vinny will start at 4:00 AM tomorrow`);
     }
 
-    console.log('✅ Vinny is now running! Press Ctrl+C to stop.');
+    console.log('\n📅 Today\'s posting schedule (Edmonton time):');
+    const times = ['4:00 AM', '5:36 AM', '7:12 AM', '8:48 AM', '10:24 AM',
+                   '12:00 PM', '1:36 PM', '3:12 PM', '4:48 PM', '6:24 PM'];
+    times.forEach((time, i) => console.log(`   ${i + 1}. ${time}`));
+
+    console.log('\n✅ Vinny is now running! Press Ctrl+C to stop.');
   }
 
-  private async executePost(): Promise<void> {
+  private async executePost(postNumber: number): Promise<void> {
     if (this.isPosting) {
-      return; // Prevent concurrent posts
-    }
-
-    // Check if we're in active hours
-    if (!this.isActiveHours()) {
-      return; // Silently skip if outside active hours
+      console.log(`⏭️  Already posting, skipping this scheduled time`);
+      return;
     }
 
     this.isPosting = true;
 
     try {
-      // Check if we've already hit the daily limit
-      const todayCount = this.db.getTodayPostCount();
-      if (todayCount >= this.postsPerDay) {
-        this.isPosting = false;
-        return;
-      }
-
-      console.log(`\n🎬 Generating post ${todayCount + 1}/${this.postsPerDay} for today...`);
+      console.log(`\n🎬 Generating scheduled post #${postNumber}...`);
 
       // Get random category
       const category = this.vinny.getRandomCategory();
@@ -119,9 +117,9 @@ export class PostScheduler {
         success: true,
       });
 
-      console.log(`✅ Post ${todayCount + 1}/${this.postsPerDay} completed!`);
+      console.log(`✅ Scheduled post #${postNumber} completed!`);
     } catch (error: any) {
-      console.error('❌ Failed to execute post:', error.message);
+      console.error(`❌ Failed to execute scheduled post #${postNumber}:`, error.message);
 
       // Save failed post to database
       this.db.savePost({
