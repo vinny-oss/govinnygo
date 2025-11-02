@@ -2,7 +2,7 @@
 
 echo "🐕 =========================================="
 echo "🐕   VINNY COMPLETE RESET & UPDATE"
-echo "🐕   Time-based schedule: 4 AM - 8 PM"
+echo "🐕   New Personality + Time Schedule"
 echo "🐕 =========================================="
 echo ""
 
@@ -14,19 +14,28 @@ pm2 stop vinny 2>/dev/null || true
 pm2 delete vinny 2>/dev/null || true
 
 # Pull latest code
-echo "📥 Pulling latest code with time-based schedule..."
+echo "📥 Pulling latest code with new personality..."
 git pull
 
-# Update timezone in .env to Edmonton
-echo "🌍 Setting timezone to America/Edmonton..."
+# Update timezone and posts per day in .env
+echo "🌍 Configuring for Edmonton timezone..."
 if grep -q "TIMEZONE=" .env; then
     sed -i 's/TIMEZONE=.*/TIMEZONE=America\/Edmonton/' .env
 else
     echo "TIMEZONE=America/Edmonton" >> .env
 fi
 
-# Show current timezone setting
-echo "✅ Timezone set to: $(grep TIMEZONE .env)"
+if grep -q "POSTS_PER_DAY=" .env; then
+    sed -i 's/POSTS_PER_DAY=.*/POSTS_PER_DAY=12/' .env
+else
+    echo "POSTS_PER_DAY=12" >> .env
+fi
+
+# Show current settings
+echo "✅ Settings:"
+grep "TIMEZONE=" .env
+grep "POSTS_PER_DAY=" .env
+echo ""
 
 # Delete database to reset everything
 echo "🗑️  Deleting old database (fresh start)..."
@@ -37,7 +46,7 @@ echo "🔨 Building project..."
 npm run build
 
 # Start fresh with PM2
-echo "🚀 Starting Vinny with time-based schedule..."
+echo "🚀 Starting Vinny with new personality..."
 pm2 start ecosystem.config.cjs
 
 # Save PM2 config
@@ -46,20 +55,31 @@ pm2 save
 echo ""
 echo "✅ =========================================="
 echo "✅   VINNY IS NOW RUNNING!"
+echo "✅   New Personality: Arrogant Expert"
 echo "✅ =========================================="
 echo ""
 echo "📍 Posting times (Edmonton time):"
-echo "   1. 4:00 AM    6. 12:00 PM"
-echo "   2. 5:36 AM    7. 1:36 PM"
-echo "   3. 7:12 AM    8. 3:12 PM"
-echo "   4. 8:48 AM    9. 4:48 PM"
-echo "   5. 10:24 AM   10. 6:24 PM"
+echo "   1. 4:00 AM - Good Morning 🌅"
+echo "   2. 5:20 AM"
+echo "   3. 6:40 AM"
+echo "   4. 8:00 AM"
+echo "   5. 9:20 AM"
+echo "   6. 10:40 AM"
+echo "   7. 12:00 PM - Lunch 🍽️"
+echo "   8. 1:20 PM"
+echo "   9. 2:40 PM"
+echo "   10. 4:00 PM"
+echo "   11. 5:20 PM"
+echo "   12. 7:45 PM - Good Night 🌙"
 echo ""
 echo "💤 Silent hours: 8:00 PM - 4:00 AM"
+echo ""
+echo "🎯 New vibe: Confident dog expert, Gen Z energy"
+echo "    No more 'woof woof' - talking to humans now"
 echo ""
 echo "📊 View logs: pm2 logs vinny"
 echo "📈 View status: pm2 status"
 echo ""
 
 # Show logs
-pm2 logs vinny --lines 20
+pm2 logs vinny --lines 25
