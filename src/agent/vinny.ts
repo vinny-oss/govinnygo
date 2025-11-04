@@ -47,8 +47,8 @@ IMPORTANT:
     try {
       const message = await this.client.messages.create({
         model: 'claude-3-haiku-20240307',
-        max_tokens: 200,
-        temperature: 0.8, // Slightly lower for more consistency
+        max_tokens: 100,
+        temperature: 0.7,
         system: this.systemPrompt,
         messages: [
           {
@@ -56,15 +56,32 @@ IMPORTANT:
             content: userPrompt,
           },
         ],
+        stop_sequences: ['\n\n', '🧠 ', '💪 ', '🌱 ', '💊 ', '🚨 ', '🧪 ', '🏋️'],
       });
 
       const content = message.content[0];
       if (content.type === 'text') {
         let text = content.text.trim();
+
+        // Take only first sentence/tweet if multiple generated
+        const emojiPattern = /[🧠💪🌱💊🚨🧪🏋️🐕😏💧🔥⚡]/;
+        const parts = text.split(emojiPattern);
+        if (parts.length > 1) {
+          // Keep first part + first emoji
+          const firstEmoji = text.match(emojiPattern);
+          text = parts[0].trim() + (firstEmoji ? firstEmoji[0] : '');
+        }
+
+        // Truncate to 280 chars max
+        if (text.length > 280) {
+          text = text.substring(0, 277) + '...';
+        }
+
         // Remove any hashtags
         text = text.replace(/#\w+/g, '').trim();
         // Clean up extra spaces
         text = text.replace(/\s+/g, ' ').trim();
+
         return text;
       }
 
@@ -105,7 +122,7 @@ IMPORTANT:
       prompt += '\n\nMake your post unique and VARY your style/opening from these recent posts. Don\'t start every tweet the same way.';
     }
 
-    prompt += '\n\nRespond with ONLY the tweet text. Keep it under 280 characters.';
+    prompt += '\n\nCRITICAL: Generate EXACTLY ONE tweet. DO NOT generate multiple tweets. DO NOT use repetitive phrases like "game-changer", "Listen up", "Heads up", "Attention dog parents". Just ONE single tweet under 280 characters. Stop after one complete thought.';
 
     return prompt;
   }
