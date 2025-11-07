@@ -56,7 +56,6 @@ IMPORTANT:
             content: userPrompt,
           },
         ],
-        stop_sequences: ['\n\n'],
       });
 
       const content = message.content[0];
