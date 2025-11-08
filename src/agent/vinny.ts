@@ -83,16 +83,16 @@ Examples of the style:
 
   private buildPrompt(request: ContentRequest): string {
     const categoryPrompts: Record<PostCategory, string> = {
-      good_morning: 'Morning motivational post. Topics: early walks, morning routines, breakfast timing, energy levels.',
-      lunch: 'Lunch/nutrition post. Topics: feeding schedules, portion sizes, food types, hydration, supplements, treats.',
-      good_night: 'Night post. Topics: sleep needs, bedtime routines, recovery, overnight fasting, quiet time.',
-      health_tip: 'Health tip. Topics: dental care, grooming, vaccinations, parasites, skin/coat health, ears, eyes, nails.',
-      fitness: 'Exercise tip. Topics: walk duration, intensity, weather conditions, indoor activities, muscle building, joint health.',
-      safety: 'Safety warning. Topics: toxic foods, household hazards, temperature extremes, traffic, other animals, choking risks.',
-      longevity: 'Longevity advice. Topics: preventive care, weight management, mental stimulation, stress reduction, senior dog care.',
-      joke: 'Funny observation about dog behavior or quirks.',
-      story: 'Brief interesting story about dogs - historical, scientific, or breed-specific.',
-      fact: 'Specific fact with numbers about dog biology, behavior, or capabilities.',
+      good_morning: 'Write a morning post',
+      lunch: 'Write about dog food or nutrition',
+      good_night: 'Write a night post about sleep or rest',
+      health_tip: 'Write a dog health tip',
+      fitness: 'Write about dog exercise',
+      safety: 'Write a dog safety warning',
+      longevity: 'Write about dog lifespan or preventive care',
+      joke: 'Write a funny observation about dogs',
+      story: 'Write a brief story about dogs',
+      fact: 'Write a fact about dogs with numbers',
     };
 
     let prompt = categoryPrompts[request.category];
