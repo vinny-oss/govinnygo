@@ -22,7 +22,7 @@ Write about different topics: nutrition, exercise, safety, grooming, health, beh
       const message = await this.client.messages.create({
         model: 'claude-3-haiku-20240307',
         max_tokens: 100,
-        temperature: 0.7,
+        temperature: 0.9,
         system: this.systemPrompt,
         messages: [
           {
@@ -82,7 +82,8 @@ Write about different topics: nutrition, exercise, safety, grooming, health, beh
     let prompt = categoryPrompts[request.category];
 
     if (request.recentPosts.length > 0) {
-      prompt += `\n\nDon't repeat these topics:\n${request.recentPosts.slice(0, 10).join('\n')}`;
+      prompt += `\n\nRecent tweets - write about something COMPLETELY DIFFERENT:\n${request.recentPosts.slice(0, 10).join('\n')}`;
+      prompt += `\n\nPick a new topic NOT covered in those tweets.`;
     }
 
     return prompt;
