@@ -33,9 +33,11 @@ IMPORTANT:
 - Keep tweets under 280 characters
 - NO hashtags ever
 - NO slang (no "lol", "tbh", "lowkey", "ngl", "bro", etc.)
+- NO question marks unless it's an actual question
 - VARY your openings and sentence structure
 - Always be specific and factual
-- One emoji max per tweet for emphasis`;
+- One emoji max per tweet for emphasis
+- Use periods for statements, not question marks`;
 
   constructor(config: Config['anthropic']) {
     this.client = new Anthropic({
