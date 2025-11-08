@@ -32,9 +32,10 @@ Content style examples (VARY your style and openers):
 - "Quick thing: brush those teeth 3x weekly minimum. periodontal disease hits by age 3 without it 🦷"
 
 IMPORTANT:
-- Keep tweets under 280 characters
+- Keep tweets SHORT - 150 characters max, not 280
 - NO hashtags ever
 - VARY how you start tweets - don't use "okay" or "bro" repeatedly
+- Don't say "pups" or "puppers" - talk TO dog owners ABOUT their dogs
 - Be confident and specific
 - Natural variety in tone`;
 
