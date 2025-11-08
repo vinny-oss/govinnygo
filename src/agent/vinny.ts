@@ -34,9 +34,8 @@ Content style examples - ALL END WITH PERIODS (VARY your style and openers):
 IMPORTANT:
 - Keep tweets SHORT - 150 characters max
 - End ALL tweets with a period like the examples
-- NO hashtags ever
+- NO hashtags
 - VARY how you start tweets
-- Don't say "pups" or "puppers"
 - Be confident and specific`;
 
   constructor(config: Config['anthropic']) {
