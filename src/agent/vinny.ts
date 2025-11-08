@@ -3,19 +3,7 @@ import { Config, PostCategory, ContentRequest } from '../types/index.js';
 
 export class VinnyAgent {
   private client: Anthropic;
-  private readonly systemPrompt = `You are Vinny, a dog health expert. Write tweets about dog health, fitness, safety, and longevity.
-
-Follow these examples:
-- "Turmeric reduces joint inflammation by 27%. Add 1/4 tsp per 10 lbs of body weight to their food daily 🧪"
-- "Chocolate contains theobromine which is toxic to dogs. Dark chocolate is most dangerous. Call your vet immediately if ingested 🚨"
-- "Dogs have 300 million olfactory receptors vs 6 million in humans. This allows them to detect cancer and explosives 🧠"
-- "Exercise needs: 30-60 min daily depending on breed. Include mental stimulation like puzzle feeders and scent work 🏋️"
-- "Omega-3 fatty acids reduce inflammation and support brain function. Use wild-caught fish oil, 20-40mg per pound of body weight 💊"
-- "Raw diets increase salmonella risk by 23x compared to commercial kibble. Stick with balanced food from reputable brands ✅"
-- "Probiotics improve gut health and immune function. Studies show 40% reduction in digestive issues with daily supplementation 👀"
-- "Your pup needs mental stimulation. Puzzle toys reduce destructive behavior by 35%. Try 15 min sessions daily 🧩"
-
-Include numbers and facts. No hashtags. Keep under 280 characters`;
+  private readonly systemPrompt = `Write tweets about dog health. Include specific facts and numbers. Add one emoji. Under 280 characters. No hashtags`;
 
   constructor(config: Config['anthropic']) {
     this.client = new Anthropic({
@@ -75,35 +63,23 @@ Include numbers and facts. No hashtags. Keep under 280 characters`;
 
   private buildPrompt(request: ContentRequest): string {
     const categoryPrompts: Record<PostCategory, string> = {
-      good_morning: 'Morning post. Example: "Morning. Daily walks prevent obesity in 60% of dogs ☀️"',
-
-      lunch: 'Dog nutrition. Example: "Blueberries contain antioxidants that improve cognition. Feed 2-3 berries per 10 lbs 🫐"',
-
-      good_night: 'Night post about rest. Example: "Good night. Dogs need 12-14 hours of sleep for proper recovery 😴"',
-
-      health_tip: 'Health tip with facts and numbers. Example: "Dental disease affects 80% of dogs by age 3. Brush teeth daily 🦷"',
-
-      fitness: 'Exercise tip. Example: "Swimming builds muscle without joint stress. 15-20 min sessions 3x weekly 🏊"',
-
-      safety: 'Safety warning. Example: "Grapes cause acute kidney failure in dogs. Even 1-2 grapes can be fatal. Call vet immediately 🚨"',
-
-      longevity: 'Dog lifespan tip. Example: "Maintaining healthy weight increases lifespan by 1.8 years. Monitor body condition monthly 📊"',
-
-      joke: 'Brief observation. Example: "Dogs tilt their heads to hear high frequencies better. Not because they understand your baby talk 🐕"',
-
-      story: 'Historical or scientific fact. Example: "Laika the dog orbited Earth in 1957, paving the way for human space travel 🚀"',
-
-      fact: 'Fact with numbers. Example: "A dog's nose print is unique like a human fingerprint 👃"',
+      good_morning: 'Morning post about dogs',
+      lunch: 'Dog nutrition tip',
+      good_night: 'Night post about dog rest',
+      health_tip: 'Dog health tip',
+      fitness: 'Dog exercise tip',
+      safety: 'Dog safety warning',
+      longevity: 'Dog lifespan tip',
+      joke: 'Interesting dog fact',
+      story: 'Dog story',
+      fact: 'Dog fact with numbers',
     };
 
     let prompt = categoryPrompts[request.category];
 
     if (request.recentPosts.length > 0) {
-      prompt += `\n\nRecent posts to avoid repeating:\n${request.recentPosts.slice(0, 10).join('\n')}`;
-      prompt += '\n\nDon\'t repeat these topics.';
+      prompt += `\n\nDon't repeat these topics:\n${request.recentPosts.slice(0, 10).join('\n')}`;
     }
-
-    prompt += '\n\nWrite ONE tweet under 280 characters.';
 
     return prompt;
   }
