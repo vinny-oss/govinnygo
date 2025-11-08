@@ -52,15 +52,6 @@ Your voice:
       if (content.type === 'text') {
         let text = content.text.trim();
 
-        // Take only first sentence/tweet if multiple generated
-        const emojiPattern = /[🧠💪🌱💊🚨🧪🏋️🐕😏💧🔥⚡]/;
-        const parts = text.split(emojiPattern);
-        if (parts.length > 1) {
-          // Keep first part + first emoji
-          const firstEmoji = text.match(emojiPattern);
-          text = parts[0].trim() + (firstEmoji ? firstEmoji[0] : '');
-        }
-
         // Truncate to 280 chars max
         if (text.length > 280) {
           text = text.substring(0, 277) + '...';
