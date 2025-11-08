@@ -20,7 +20,7 @@ TONE MIX: 40% straight practical, 30% practical + tiny absurd detail, 20% person
 
 STYLE: One CAPS word. Specific numbers (°F, mg/kg, oz, minutes). 1-3 emojis. Under 280 chars. No hashtags.
 
-Write NEW original content. Don't copy these examples - just match the STYLE:
+Examples of the style:
 "Brush teeth 3x weekly minimum or face $2K vet bills. Do the thing. 🦷"
 "68°F is my minimum operating temp. Below that I'm tactically vibrating. Sweater me. 🥶"
 "I drink 1oz water per pound daily. Non-negotiable. Fill the bowl. 💧"`;
@@ -83,16 +83,16 @@ Write NEW original content. Don't copy these examples - just match the STYLE:
 
   private buildPrompt(request: ContentRequest): string {
     const categoryPrompts: Record<PostCategory, string> = {
-      good_morning: 'Morning post about dogs',
-      lunch: 'Dog nutrition tip',
-      good_night: 'Night post about dog rest',
-      health_tip: 'Dog health tip',
-      fitness: 'Dog exercise tip',
-      safety: 'Dog safety warning',
-      longevity: 'Dog lifespan tip',
-      joke: 'Interesting dog fact',
-      story: 'Dog story',
-      fact: 'Dog fact with numbers',
+      good_morning: 'Morning motivational post. Topics: early walks, morning routines, breakfast timing, energy levels.',
+      lunch: 'Lunch/nutrition post. Topics: feeding schedules, portion sizes, food types, hydration, supplements, treats.',
+      good_night: 'Night post. Topics: sleep needs, bedtime routines, recovery, overnight fasting, quiet time.',
+      health_tip: 'Health tip. Topics: dental care, grooming, vaccinations, parasites, skin/coat health, ears, eyes, nails.',
+      fitness: 'Exercise tip. Topics: walk duration, intensity, weather conditions, indoor activities, muscle building, joint health.',
+      safety: 'Safety warning. Topics: toxic foods, household hazards, temperature extremes, traffic, other animals, choking risks.',
+      longevity: 'Longevity advice. Topics: preventive care, weight management, mental stimulation, stress reduction, senior dog care.',
+      joke: 'Funny observation about dog behavior or quirks.',
+      story: 'Brief interesting story about dogs - historical, scientific, or breed-specific.',
+      fact: 'Specific fact with numbers about dog biology, behavior, or capabilities.',
     };
 
     let prompt = categoryPrompts[request.category];
