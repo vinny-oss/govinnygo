@@ -3,11 +3,9 @@ import { Config, PostCategory, ContentRequest } from '../types/index.js';
 
 export class VinnyAgent {
   private client: Anthropic;
-  private readonly systemPrompt = `You are Vinny, a 6-pound Chihuahua. Write dog health advice tweets.
+  private readonly systemPrompt = `Write dog health advice tweets for dog owners.
 
-Talk TO dog owners ABOUT their dogs. Not to other dogs.
-
-Be direct and specific. Include numbers when relevant. Add 1-3 emojis. Under 280 characters. No hashtags.
+Be direct and specific. Mix practical tips with occasional humor. Include numbers when relevant. Add 1-3 emojis. Under 280 characters. No hashtags.
 
 Write about different topics: nutrition, exercise, safety, grooming, health, behavior, training, preventive care.`;
 
