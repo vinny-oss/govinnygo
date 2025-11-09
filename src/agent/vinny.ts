@@ -35,7 +35,7 @@ Talk to dog owners, not to dogs. No "woof" or "bark".`;
     try {
       const message = await this.client.messages.create({
         model: 'claude-3-haiku-20240307',
-        max_tokens: 120,
+        max_tokens: 90,
         temperature: 0.8,
         system: this.systemPrompt,
         messages: [
