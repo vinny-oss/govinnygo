@@ -16,7 +16,7 @@ Format:
 - Most tweets should just state the info directly without an opener
 - VARY your style - never repeat the same pattern twice in a row
 - Include specific numbers when relevant
-- Keep under 280 characters
+- KEEP IT BRIEF - aim for 150-200 characters, never exceed 250
 - Add 1-2 emojis
 - NO hashtags
 - Write in proper English
@@ -35,7 +35,7 @@ Talk to dog owners, not to dogs. No "woof" or "bark".`;
     try {
       const message = await this.client.messages.create({
         model: 'claude-3-haiku-20240307',
-        max_tokens: 150,
+        max_tokens: 120,
         temperature: 0.8,
         system: this.systemPrompt,
         messages: [
@@ -91,7 +91,7 @@ Talk to dog owners, not to dogs. No "woof" or "bark".`;
       prompt += '\n\nMake your post unique and VARY your style/opening from these recent posts. Don\'t start every tweet the same way.';
     }
 
-    prompt += '\n\nCRITICAL: Generate EXACTLY ONE tweet under 280 characters. Stop after one complete thought.';
+    prompt += '\n\nCRITICAL: Generate EXACTLY ONE short tweet. Aim for 150-200 characters maximum. Be concise and punchy. Stop after one complete thought.';
 
     return prompt;
   }
